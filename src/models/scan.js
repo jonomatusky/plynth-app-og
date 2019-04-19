@@ -2,9 +2,6 @@ const mongoose = require('mongoose')
 const request = require('request-promise-native')
 const path = require('path')
 
-const vision = require('@google-cloud/vision')
-const client = new vision.ImageAnnotatorClient({keyFilename: '../crate/config/google-cred.json'});
-
 const visionSearch = require('../utils/vision-search')
 const musicSearch = require('../utils/music-search')
 const searchCleanup = require('../utils/search-cleanup')

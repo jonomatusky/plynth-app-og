@@ -1,6 +1,6 @@
 const path = require('path')
 const vision = require('@google-cloud/vision')
-const client = new vision.ImageAnnotatorClient({keyFilename: '../crate/config/google-cred.json'});
+const client = new vision.ImageAnnotatorClient({keyFilename: '../music-box/config/google-cred.json'});
 
 const visionSearch = async (imageBuffer) => {
     const searchResults = await client.annotateImage({

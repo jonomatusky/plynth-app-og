@@ -22,6 +22,13 @@ const upload = multer({
     }
 })
 
+app.get('', (req, res) => {
+    res.render('index', {
+        title: 'Weather',
+        name: 'Jono Matusky'
+    })
+})
+
 app.post('/scans', upload.single('photo'), async (req, res) => {
     if (!req.file) {
         res.status(400).send({ Error: 'Please upload a file'})
