@@ -1,6 +1,15 @@
 const path = require('path')
 const vision = require('@google-cloud/vision')
-const client = new vision.ImageAnnotatorClient(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
+const {auth} = require('google-auth-library');
+
+// load the environment variable with our keys
+const keysEnvVar = process.env['CREDS']
+if (!keysEnvVar) {
+  throw new Error('The $CREDS environment variable was not found!')
+}
+
+const client = new vision.ImageAnnotatorClient({ credentials: JSON.parse(keysEnvVar)})
 
 const visionSearch = async (imageBuffer) => {
     const searchResults = await client.annotateImage({
