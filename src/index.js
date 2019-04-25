@@ -29,7 +29,7 @@ const upload = multer({
 app.post('/scans', upload.single('file'), async (req, res) => {
     const source = req.hostname
 
-    res.setHeader('Access-Control-Allow-Origin', '*')
+    // res.setHeader('Access-Control-Allow-Origin', '*')
     
     if (!req.file) { res.status(400).send({ error: 'Please upload a file' }) }
 
@@ -63,7 +63,7 @@ app.post('/scans', upload.single('file'), async (req, res) => {
         res.status(404).send({ error: 'Unable to identify album, sorry!' })
     }
 }, (error, req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+    // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
     res.status(500).send( { error: 'Problems with the server. Please try again later.' } )
 })
 
@@ -150,11 +150,10 @@ app.get('/scans/:id', async (req, res) => {
         updates.forEach((update) => scan[update] = req.body[update])
         await scan.save()
 
-        res.send(scan)
+        res.status(200).send({ correct: scan.correct })
     } catch (e) {
         res.status(500).send(e)
     }
-
 })
 
 app.use(express.json())
