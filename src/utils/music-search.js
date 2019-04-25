@@ -8,7 +8,7 @@ const spotifyApiUrl = 'https://api.spotify.com/v1/'
 
 const musicSearch = async (search) => {
 
-    const tokenData = await request ({
+    const tokenData = await request({
         method: 'POST',
         uri: spotifyTokenUrl,
         headers: {
@@ -19,8 +19,12 @@ const musicSearch = async (search) => {
         },
         json: true
     })
+
+    if (!tokenData) {
+        throw new Error('Unable to authenticate with music search engine')
+    }
     
-    const musicSearch = await request ({
+    const musicSearch = await request({
         method: 'GET',
         uri: spotifyApiUrl + 'search?q=' + search + '&type=album&limit=5',
         json: true,
@@ -28,6 +32,10 @@ const musicSearch = async (search) => {
             'bearer': tokenData.access_token
         }
     })
+
+    if (!musicSearch) {
+        throw new Error('Unable to find album')
+    } 
 
     return musicSearch
 }

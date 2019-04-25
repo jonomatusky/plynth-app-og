@@ -7,8 +7,14 @@ const musicSearch = require('../utils/music-search')
 const searchCleanup = require('../utils/search-cleanup')
 
 const scanSchema = new mongoose.Schema({
+    source: {
+        type: String
+    },
     visionSearch: {
         type: Object
+    },
+    search: {
+        type: String
     },
     musicSearch: {
         type: Object
@@ -42,13 +48,10 @@ scanSchema.methods.performVisionSearch = async function () {
 scanSchema.methods.performMusicSearch = async function () {
     const visionResult = this.visionSearch.bestGuessLabels[0].label
 
-    if (!visionResult) {
-        throw new Error ('Unable to identify image')
-    }
-
     const search = await searchCleanup(visionResult)
-    const musicSearchData = await musicSearch(search)
+    this.search = search
 
+    const musicSearchData = await musicSearch(search)
     this.musicSearch = musicSearchData.albums.items
 
     return this

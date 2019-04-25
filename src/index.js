@@ -1,4 +1,6 @@
+const path = require('path')
 const express = require('express')
+const hbs = require('hbs')
 const sharp = require('sharp')
 require('./db/mongoose')
 
@@ -9,10 +11,12 @@ const Scan = require('./models/scan')
 const Photo = require('./models/photo')
 const Album = require('./models/album')
 
+app.use(express.json())
+
 const multer = require('multer')
 const upload = multer({
     limits: {
-        fileSize: 1000000
+        fileSize: 100000000
     },
     fileFilter(req, file, cb) {
         if (!file.originalname.match(/\.(jpg|jpeg|png)/)) {
@@ -22,37 +26,67 @@ const upload = multer({
     }
 })
 
-app.get('', (req, res) => {
-    res.render('index', {
-        title: 'Weather',
-        name: 'Jono Matusky'
-    })
-})
+app.post('/scans', upload.single('file'), async (req, res) => {
+    const source = req.hostname
 
-app.post('/scans', upload.single('photo'), async (req, res) => {
-    if (!req.file) {
-        res.status(400).send({ Error: 'Please upload a file'})
-        return
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    
+    if (!req.file) { res.status(400).send({ error: 'Please upload a file' }) }
+
+    const buffer = await sharp(req.file.buffer).png().resize({ width: 1600, height:1600 }).toBuffer()
+    console.log(buffer.byteLength)
+    const photo = new Photo({
+        image: buffer,
+        source
+    })
+    
+    try {
+        await photo.save()
+    } catch (e) {
+        res.status(500).send({ error: 'Unable to connect to database'})
     }
     
-    const buffer = await sharp(req.file.buffer).png().toBuffer()
-    const photo = new Photo({
-        image: buffer
-    })
-    await photo.save()
-
-    const scan = new Scan({ photo })
-
-    await scan.performVisionSearch()
-    await scan.performMusicSearch()
-    await scan.save()
-
-    const album = await Album.newFromScan(scan)
-
-    res.status(201).send(album)
-
+    try {
+        const scan = new Scan({ 
+            photo,
+            source
+        })
+        await scan.performVisionSearch()
+        console.log(scan.visionSearch.bestGuessLabels[0].label)
+        await scan.performMusicSearch()
+        await scan.save()
+        const album = await Album.newFromScan(scan)
+        console.log(album.name)
+        res.status(201).send({ album, scanId: scan._id })
+    } catch (e) {
+        console.log(e)
+        res.status(404).send({ error: 'Unable to identify album, sorry!' })
+    }
 }, (error, req, res, next) => {
-    res.status(400).send({ error: error.message } )
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+    res.status(500).send( { error: 'Problems with the server. Please try again later.' } )
+})
+
+app.patch('/scans/:id', async (req, res) => {
+    console.log('received')
+    console.log(req.body)
+    const updates = Object.keys(req.body)
+    const allowedUpdates = ['correct']
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
+
+    if (!isValidOperation) {
+        return res.status(400).send({ error: 'Invalid Updates'})
+    }
+
+    try {
+        const scan = await Scan.findById(req.params.id)
+        updates.forEach((update) => scan[update] = req.body[update])
+        await scan.save()
+
+        res.send(scan)
+    } catch (e) {
+        res.status(400).send(e)
+    }
 })
 
 app.get('/albums/:id/scans', async (req, res) => {
@@ -95,6 +129,32 @@ app.get('/albums/:id/photos', async (req, res) => {
     } catch (e) {
         res.status(500).send(e)
     }
+})
+
+app.get('/scans/:id', async (req, res) => {
+    const updates = Object.keys(req.body)
+    const allowedUpdates = ['correct']
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
+
+    if (!isValidOperation) {
+        return res.status(400).send({error: 'Invalid Updates'})
+    }
+
+    try {
+        const scan = await Scan.findOne({ _id: req.params.id })
+
+        if (!scan) {
+            return res.status(404).send()
+        }
+
+        updates.forEach((update) => scan[update] = req.body[update])
+        await scan.save()
+
+        res.send(scan)
+    } catch (e) {
+        res.status(500).send(e)
+    }
+
 })
 
 app.use(express.json())

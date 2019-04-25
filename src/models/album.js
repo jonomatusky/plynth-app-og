@@ -19,13 +19,15 @@ const albumSchema = new mongoose.Schema({
     type: {
         type: String
     },
-    SpotifyId: {
+    spotifyId: {
         type: String,
         required: true
     },
-    SpotifyURI: {
+    spotifyURI: {
         type: String
     }
+}, {
+    timestamps: true
 })
 
 albumSchema.virtual('scans', {
@@ -42,10 +44,14 @@ albumSchema.virtual('photos', {
 
 //Input a scan, determine whether the album already exists and, if not, adds it. Saves scan, album and photo.
 albumSchema.statics.newFromScan = async function (scan) {
+
+    if (!scan.musicSearch[0]) {
+        throw new Error('No album')
+    }
     const firstResult = scan.musicSearch[0]
     const photo = scan.photo
 
-    var album = await Album.findOne({ SpotifyId: firstResult.id })
+    var album = await Album.findOne({ spotifyId: firstResult.id })
 
     if (!album) {
         album = new Album({ 
@@ -54,8 +60,8 @@ albumSchema.statics.newFromScan = async function (scan) {
             album_type: firstResult.album_type,
             imageURL: firstResult.images[0].url,
             type: firstResult.type,
-            SpotifyId: firstResult.id,
-            SpotifyURI: firstResult.uri
+            spotifyId: firstResult.id,
+            spotifyURI: firstResult.uri
         })
     }  
           

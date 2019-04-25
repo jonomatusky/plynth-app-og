@@ -7,6 +7,9 @@ const photoSchema = new mongoose.Schema({
     album: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Album'
+    },
+    source: {
+        type: String
     }
 }, {
         timestamps: true
