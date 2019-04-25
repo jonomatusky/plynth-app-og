@@ -59,7 +59,7 @@ app.post('/scans', upload.single('file'), async (req, res) => {
         res.status(201).send({ album, scanId: scan._id })
     } catch (e) {
         console.log(e)
-        res.status(404).send({ error: `Sorry, couldn't find that one! Try another.` })
+        res.status(404).send({ message: `Sorry, couldn't find that one! Try another.` })
     }
 }, (error, req, res, next) => {
     res.status(400).send( { message: error.message } )
