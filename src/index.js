@@ -20,7 +20,7 @@ const upload = multer({
     },
     fileFilter(req, file, cb) {
         if (!file.originalname.match(/\.(jpg|jpeg|png)/)) {
-            return cb(new Error('Please upload a jpeg or pgn image'))
+            return cb(new Error('Unable to scan. Please upload a jpeg or pgn image.'))
         }
         cb(undefined, true)
     }
@@ -28,8 +28,6 @@ const upload = multer({
 
 app.post('/scans', upload.single('file'), async (req, res) => {
     const source = req.hostname
-
-    // res.setHeader('Access-Control-Allow-Origin', '*')
     
     if (!req.file) { res.status(400).send({ error: 'Please upload a file' }) }
 
@@ -43,7 +41,8 @@ app.post('/scans', upload.single('file'), async (req, res) => {
     try {
         await photo.save()
     } catch (e) {
-        res.status(500).send({ error: 'Unable to connect to database'})
+        console.log(error)
+        res.status(500).send({ error: 'Unable to connect to database.'})
     }
     
     try {
@@ -60,11 +59,11 @@ app.post('/scans', upload.single('file'), async (req, res) => {
         res.status(201).send({ album, scanId: scan._id })
     } catch (e) {
         console.log(e)
-        res.status(404).send({ error: 'Unable to identify album, sorry!' })
+        res.status(404).send({ error: `Sorry, couldn't find that one! Try another.` })
     }
 }, (error, req, res, next) => {
-    // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
-    res.status(500).send( { error: 'Problems with the server. Please try again later.' } )
+    res.status(400).send( { message: error.message } )
+    console.log(error.message)
 })
 
 app.patch('/scans/:id', async (req, res) => {
@@ -75,7 +74,7 @@ app.patch('/scans/:id', async (req, res) => {
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
     if (!isValidOperation) {
-        return res.status(400).send({ error: 'Invalid Updates'})
+        return res.status(400).send({ message: 'Invalid Updates'})
     }
 
     try {
