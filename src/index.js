@@ -12,6 +12,7 @@ const Photo = require('./models/photo')
 const Album = require('./models/album')
 
 app.use(express.json())
+app.use(express.bodyParser({limit: '50mb'}))
 
 const multer = require('multer')
 const upload = multer({
