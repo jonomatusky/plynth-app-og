@@ -5,6 +5,9 @@ const sharp = require('sharp')
 require('./db/mongoose')
 
 const app = express()
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'client/build')));
+
 const port = process.env.PORT
 
 const Scan = require('./models/scan')
@@ -26,7 +29,7 @@ const upload = multer({
     }
 })
 
-app.post('/scans', upload.single('file'), async (req, res) => {
+app.post('/api/scans', upload.single('file'), async (req, res) => {
     const source = req.hostname
     
     if (!req.file) { res.status(400).send({ error: 'Please upload a file' }) }
@@ -66,7 +69,7 @@ app.post('/scans', upload.single('file'), async (req, res) => {
     console.log(error.message)
 })
 
-app.patch('/scans/:id', async (req, res) => {
+app.patch('/api/scans/:id', async (req, res) => {
     console.log('received')
     console.log(req.body)
     const updates = Object.keys(req.body)
@@ -88,7 +91,7 @@ app.patch('/scans/:id', async (req, res) => {
     }
 })
 
-app.get('/albums/:id/scans', async (req, res) => {
+app.get('/api/albums/:id/scans', async (req, res) => {
     const _id = req.params.id
 
     try {
@@ -109,7 +112,7 @@ app.get('/albums/:id/scans', async (req, res) => {
     }
 })
 
-app.get('/albums/:id/photos', async (req, res) => {
+app.get('/api/albums/:id/photos', async (req, res) => {
     const _id = req.params.id
 
     try {
@@ -130,7 +133,7 @@ app.get('/albums/:id/photos', async (req, res) => {
     }
 })
 
-app.get('/scans/:id', async (req, res) => {
+app.get('/api/scans/:id', async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['correct']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -154,6 +157,10 @@ app.get('/scans/:id', async (req, res) => {
         res.status(500).send(e)
     }
 })
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});  
 
 app.use(express.json())
 
