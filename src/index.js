@@ -159,10 +159,15 @@ app.get('/api/scans/:id', async (req, res) => {
 //production mode
 if(process.env.NODE_ENV === 'production') {
     console.log('PRODUCTION')
-    app.use(express.static(path.join(__dirname+'client/build')));
+    app.use(express.static(path.join(__dirname, 'client/build')));
+    //
+    app.get('*', (req, res) => {
+      res.sendfile(path.join(__dirname+'client/build/index.html'));
+    })
 }
 //build mode
 app.get('*', (req, res) => {
+    console.log('Not production')
     res.sendFile(path.join(__dirname+'/client/public/index.html'));
 })
 
