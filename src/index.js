@@ -5,8 +5,6 @@ const sharp = require('sharp')
 require('./db/mongoose')
 
 const app = express()
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'client/build')));
 
 const port = process.env.PORT
 
@@ -160,12 +158,9 @@ app.get('/api/scans/:id', async (req, res) => {
 
 //production mode
 if(process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, 'client/build')));
-    //
-    app.get('*', (req, res) => {
-      res.sendfile(path.join(__dirname = 'client/build/index.html'));
-    })
-  }
+    console.log('PRODUCTION')
+    app.use(express.static(path.join(__dirname+'client/build')));
+}
 //build mode
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname+'/client/public/index.html'));
