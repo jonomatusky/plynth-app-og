@@ -6,7 +6,7 @@ require('./db/mongoose')
 
 const app = express()
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static(path.join(__dirname, "../client/build")))
 
 const port = process.env.PORT
 
@@ -160,18 +160,16 @@ app.get('/api/scans/:id', async (req, res) => {
 
 //production mode
 if(process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client/build')));
+  app.use(express.static(path.join(__dirname, '../client/build')));
   //
   app.get('*', (req, res) => {
-    res.sendfile(path.join(__dirname, 'client/build/index.html'));
+    res.sendfile(path.join(__dirname, '../client/build/index.html'));
   })
 }
 //build mode
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname+'/client/public/index.html'));
+  res.sendFile(path.join(__dirname+'../client/public/index.html'));
 })
-
-app.use(express.json())
 
 app.listen(port, () => {
     console.log('Server is up on port ' + port)
