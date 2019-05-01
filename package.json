@@ -33,7 +33,7 @@
     "client": "npm start --prefix client",
     "server": "env-cmd ./config/dev.env nodemon src/index.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "cd client && npm install --only=dev && npm install && npm run build"
   },
   "author": "",
   "license": "ISC"
