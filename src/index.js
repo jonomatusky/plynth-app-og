@@ -35,7 +35,7 @@ app.post('/api/scans', upload.single('file'), async (req, res) => {
     if (!req.file) { res.status(400).send({ error: 'Please upload a file' }) }
 
     const buffer = await sharp(req.file.buffer).png().resize({ width: 1600, height:1600 }).toBuffer()
-    console.log(buffer.byteLength)
+    console.log('recieved')
     const photo = new Photo({
         image: buffer,
         source
@@ -54,14 +54,12 @@ app.post('/api/scans', upload.single('file'), async (req, res) => {
             source
         })
         await scan.performVisionSearch()
-        console.log(scan.visionSearch.bestGuessLabels[0].label)
+        await scan.save()
         await scan.performMusicSearch()
         await scan.save()
         const album = await Album.newFromScan(scan)
-        console.log(album.name)
         res.status(201).send({ album, scanId: scan._id })
     } catch (e) {
-        console.log(e)
         res.status(404).send({ message: `Sorry, couldn't find that one! Try another.` })
     }
 }, (error, req, res, next) => {
@@ -70,8 +68,6 @@ app.post('/api/scans', upload.single('file'), async (req, res) => {
 })
 
 app.patch('/api/scans/:id', async (req, res) => {
-    console.log('received')
-    console.log(req.body)
     const updates = Object.keys(req.body)
     const allowedUpdates = ['correct']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))

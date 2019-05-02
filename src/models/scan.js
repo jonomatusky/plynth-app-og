@@ -1,10 +1,8 @@
 const mongoose = require('mongoose')
-const request = require('request-promise-native')
-const path = require('path')
 
 const visionSearch = require('../utils/vision-search')
 const musicSearch = require('../utils/music-search')
-const searchCleanup = require('../utils/search-cleanup')
+const { searchCleanup } = require('../utils/search-cleanup')
 
 const scanSchema = new mongoose.Schema({
     source: {

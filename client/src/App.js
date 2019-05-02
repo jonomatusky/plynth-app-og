@@ -116,6 +116,9 @@ export default class App extends Component {
             {content()}
           </div>
         </div>
+        <div className="footer">
+          <p>Powered by <a href="http://www.plynth.com">Plynth</a></p>
+        </div>
       </div>
     )
   }
