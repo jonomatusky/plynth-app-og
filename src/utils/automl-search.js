@@ -5,7 +5,7 @@ const {auth} = require('google-auth-library');
 // load the environment variable with our keys
 const keysEnvVar = process.env['CREDS']
 if (!keysEnvVar) {
-  throw new Error('The $CREDS environment variable was not found!')
+  return
 }
 
 // Create client for prediction service.
@@ -26,70 +26,60 @@ const spotifyApiUrl = 'https://api.spotify.com/v1/albums/'
 const modelFullId = client.modelPath(projectId, computeRegion, modelId);
 
 const automlSearch = async (imageBuffer) => {
-  const payload = {}
-  const params = {}
-
-  payload.image = {imageBytes: imageBuffer}
-  params.score_threshold = 0.95
-
-  console.log('sending')
-
-  const [response] = await client.predict({
-    name: modelFullId,
-    payload: payload,
-    params: params,
-  });
-
-  // console.log(response)
-
-  console.log(`Prediction results:`);
-  response.payload.forEach(result => {
-    console.log(`Predicted class name: ${result.displayName}`);
-    console.log(`Predicted class score: ${result.classification.score}`);
-  });
-
-  if (!response.payload) {
-    throw new Error('Unable to identify')
+  try {
+    const payload = {}
+    const params = {}
+  
+    payload.image = {imageBytes: imageBuffer}
+    params.score_threshold = 0.95
+  
+    console.log('sending')
+  
+    const [response] = await client.predict({
+      name: modelFullId,
+      payload: payload,
+      params: params,
+    });
+  
+    console.log(response)
+  
+    console.log(`Prediction results:`);
+    response.payload.forEach(result => {
+      console.log(`Predicted class name: ${result.displayName}`);
+      console.log(`Predicted class score: ${result.classification.score}`);
+    });
+  
+    const albumID = response.payload[0].displayName
+  
+    console.log('Album ID is: ' + albumID)
+  
+    const tokenData = await request ({
+      method: 'POST',
+      uri: spotifyTokenUrl,
+      headers: {
+          'Authorization': 'Basic ' + base64Credentials  
+      },
+      form: {
+          grant_type: 'client_credentials'
+      },
+      json: true
+    })
+  
+    const musicSearch = await request ({
+      method: 'GET',
+      uri: spotifyApiUrl + albumID,
+      json: true,
+      auth: {
+          'bearer': tokenData.access_token
+      }
+    })
+  
+    console.log(musicSearch)
+  
+    return musicSearch
+  } catch (e) {
+    return
   }
-
-  const albumID = response.payload[0].displayName
-
-  console.log('Album ID is: ' + albumID)
-
-  if (albumID === 'No_Album') {
-    // console.log('No Album')
-    // return('No Album')
-    throw new Error('Unable to identify album')
-  }
-
-  const tokenData = await request ({
-    method: 'POST',
-    uri: spotifyTokenUrl,
-    headers: {
-        'Authorization': 'Basic ' + base64Credentials  
-    },
-    form: {
-        grant_type: 'client_credentials'
-    },
-    json: true
-  })
-
-  if (!tokenData) {
-    throw new Error('Unable to authenticate with music search engine')
-  }
-
-  const musicSearch = await request ({
-    method: 'GET',
-    uri: spotifyApiUrl + albumID,
-    json: true,
-    auth: {
-        'bearer': tokenData.access_token
-    }
-  })
-
-  console.log(musicSearch)
-
-  return musicSearch
 }
 
 module.exports = automlSearch
