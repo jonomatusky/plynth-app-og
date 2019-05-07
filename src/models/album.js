@@ -45,10 +45,19 @@ albumSchema.virtual('photos', {
 //Input a scan, determine whether the album already exists and, if not, adds it. Saves scan, album and photo.
 albumSchema.statics.newFromScan = async function (scan) {
 
-    if (!scan.musicSearch[0]) {
-        throw new Error('No album')
+    // if (!scan.musicSearch[0]) {
+    //     throw new Error('No album')
+    // }
+    let firstResult = scan.musicSearch[0]
+
+    if (scan.automlAlbum) {
+        firstResult = scan.automlAlbum
+    } else if (scan.musicSearch[0]){
+        firstResult = scan.musicSearch[0]
+    } else {
+        throw new Error('No guess found')
     }
-    const firstResult = scan.musicSearch[0]
+
     const photo = scan.photo
 
     var album = await Album.findOne({ spotifyId: firstResult.id })

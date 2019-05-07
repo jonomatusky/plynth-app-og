@@ -53,13 +53,18 @@ app.post('/api/scans', upload.single('file'), async (req, res) => {
             photo,
             source
         })
-        await scan.performVisionSearch()
-        await scan.save()
-        await scan.performMusicSearch()
+
+        await Promise.all([scan.performVisionSearch(), scan.performAutomlSearch()])
+        // await scan.performVisionSearch()
+        // await scan.save()
+        // await scan.performMusicSearch()
+        // await scan.save()
+        // await scan.performAutomlSearch()
         await scan.save()
         const album = await Album.newFromScan(scan)
         res.status(201).send({ album, scanId: scan._id })
     } catch (e) {
+        console.log(e)
         res.status(404).send({ message: `Sorry, couldn't find that one! Try another.` })
     }
 }, (error, req, res, next) => {

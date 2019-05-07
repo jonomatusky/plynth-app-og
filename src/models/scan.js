@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const visionSearch = require('../utils/vision-search')
 const musicSearch = require('../utils/music-search')
 const { searchCleanup } = require('../utils/search-cleanup')
+const automlSearch= require('../utils/automl-search')
 
 const scanSchema = new mongoose.Schema({
     source: {
@@ -19,6 +20,9 @@ const scanSchema = new mongoose.Schema({
     },
     spotfiyToken: {
         type: String
+    },
+    automlSearch: {
+        type: Object
     },
     correct: {
         type: Boolean,
@@ -40,18 +44,23 @@ scanSchema.methods.performVisionSearch = async function () {
     const imageBuffer = Buffer.from(this.photo.image).toString('base64')
 
     this.visionSearch = await visionSearch(imageBuffer)
-    return this
-}
 
-scanSchema.methods.performMusicSearch = async function () {
     const visionResult = this.visionSearch.bestGuessLabels[0].label
-
     const search = await searchCleanup(visionResult)
     this.search = search
 
     const musicSearchData = await musicSearch(search)
     this.musicSearch = musicSearchData.albums.items
 
+    return this
+}
+
+scanSchema.methods.performAutomlSearch = async function () {
+    const imageBuffer = Buffer.from(this.photo.image).toString('base64')
+
+    const album = await automlSearch(imageBuffer)
+
+    this.automlAlbum = album
     return this
 }
 
