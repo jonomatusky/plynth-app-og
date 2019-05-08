@@ -46,7 +46,7 @@ app.post('/api/scans', upload.single('file'), async (req, res) => {
     try {
         await photo.save()
     } catch (e) {
-        console.log(error)
+        console.log(e)
         res.status(500).send({ error: 'Unable to connect to database.'})
     }
     
