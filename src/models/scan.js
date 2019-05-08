@@ -18,7 +18,7 @@ const scanSchema = new mongoose.Schema({
     musicSearch: {
         type: Object
     },
-    spotfiyToken: {
+    spotifyToken: {
         type: String
     },
     automlSearch: {
@@ -60,7 +60,7 @@ scanSchema.methods.performAutomlSearch = async function () {
 
     const album = await automlSearch(imageBuffer)
 
-    this.automlAlbum = album
+    this.automlSearch = album
     return this
 }
 

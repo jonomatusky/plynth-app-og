@@ -31,6 +31,8 @@ const upload = multer({
 
 app.post('/api/scans', upload.single('file'), async (req, res) => {
     const source = req.hostname
+
+    console.log(req)
     
     if (!req.file) { res.status(400).send({ error: 'Please upload a file' }) }
 
